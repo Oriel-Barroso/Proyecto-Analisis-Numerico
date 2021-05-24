@@ -1,4 +1,5 @@
 from itertools import chain
+import re
 
 
 class Functions():
@@ -78,9 +79,30 @@ class Functions():
                 for x in result:
                     lista.append(x.split('+'))
                 y = list(chain(*lista))
-                return(list(reversed(y)))
+                for i in y:
+                    if i.isdigit():
+                        j = i
+                        y.remove(i)
+                        y.insert(0, j)
+                    else:
+                        pattern = re.compile(r'[-]{1}\d(?![*]+)')
+                        num = pattern.findall(i)
+                        list_neg = []
+                        for i in num:
+                            if i.startswith('-'):
+                                r = i
+                                list_neg.append(i)
+                                y.remove(i)
+                                y.insert(0, r)
+                return(y)
             else:
                 result2 = text.split('+')
-                return(list(reversed(result2)))
+                for i in result2:
+                    if i.isdigit():
+                        j = i
+                        result2.remove(i)
+                        result2.insert(0, j)
+                    
+                return result2
         else:
             return expre

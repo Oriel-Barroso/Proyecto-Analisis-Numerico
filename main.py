@@ -62,6 +62,8 @@ def main():
     error_cal = service.error(func_x, func_w, fun.symbol, fun.inf_limit, fun.sup_limit, system_ecuation)
     graph = service.function_graph(func_x, func_g, fun.inf_limit, fun.sup_limit)
 
-    print('El sistema obtenido para aproximar es ')
+    print(system_ecuation)
+    print(error_cal)
+    print(graph)
     
 

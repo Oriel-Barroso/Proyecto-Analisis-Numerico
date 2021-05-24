@@ -3,6 +3,7 @@ from sympy import symbols, integrate
 import math
 import numpy as np
 import matplotlib.pyplot as plt
+import re
 
 
 class ServiceFunction():
@@ -33,7 +34,7 @@ class ServiceFunction():
                 self.matrix_b.append(integrate_func)
         return self.matrix_b
 
-    def calculate_se(self, function, polinomic_function):
+    def calculate_se(self, polinomic_function, symbol):
         sqr_root = int(math.sqrt(len(self.matrix_a)))
         list_a = []
         i = 0
@@ -50,6 +51,49 @@ class ServiceFunction():
         mtx_a = np.array(mtx_a)
         mtx_b = np.array(self.matrix_b)
         result = np.linalg.solve(mtx_a, mtx_b)
+        expre = polinomic_function
+        sym = symbol
+        pat1 = re.compile(r'[**]?[*]?'+sym+r'[+-]?(?![**])')
+        exponente_uno = pat1.findall(expre)
+        pat = re.compile(sym+r'[**]+[0-9]+')
+        exponentes = pat.findall(expre)
+        pat2 = re.compile(r'[*]?\d[+-]?(?![*]+)')
+        constantes = pat2.findall(expre)
+        lista = []
+        largo_const = len(constantes)
+        while largo_const > 0:
+            for i in constantes:
+                if '*' in i:
+                    constantes.remove(i)
+            largo_const-=1
+        expre_expo = ''.join(exponentes)
+        for i in expre_expo:
+            if i.isdigit():
+                lista.append(i)
+        if len(exponente_uno) !=0:
+            lista.append(str(len(exponente_uno)))
+        lista = sorted(lista)
+        se = result
+        lista2 = []
+        if len(constantes) > 0:
+            lista.append(str(len(constantes)))
+            lista = sorted(lista)
+            print('lista con 1?: ', lista)
+            for i, val in enumerate(lista):
+                if i == 0:
+                    lista2.append(str(se[i]))
+                if '-' in str(se[i]) and i != 0:
+                    lista2.append(str(se[i])+'*'+sym+'**'+val)
+                elif i != 0:
+                    lista2.append('+'+str(se[i])+'*'+sym+'**'+val)
+        else:
+            for i, val in enumerate(lista):
+                if '-' in str(se[i]):
+                    lista2.append(str(se[i])+'*'+sym+'**'+val)
+                else:
+                    lista2.append('+'+str(se[i])+'*'+sym+'**'+val)
+        lista3 = ''.join(lista2)
+        print('Funcion obtenida para aproximar: ',lista3)
         return result
 
     def error(self, function, w_p, symbol, inf, sup, result_se):
@@ -63,13 +107,55 @@ class ServiceFunction():
         except ValueError as err:
             print(f'No a sido posible calcular el error (error de tipo: {err}')
 
-    def function_graph(self, function, polinomic_function, inf, sup):
+    def function_graph(self, function, polinomic_function, se, inf, sup, symbol):
         inf = str(inf)
         sup = str(sup)
-        sup_a = float(sup+'.'+sup)
-        sup_b = float('.'+sup)
-        x = np.arange(float(inf), sup_a, sup_b)
-        evaluate_function = eval(function)
-        evaluate_polinomic_function = eval(polinomic_function)
-        plt.plot(x, evaluate_function, x, evaluate_polinomic_function)
-        plt.show()
+        sym = symbol
+        pat1 = re.compile(r'[**]?[*]?'+sym+r'[+-]?(?![**])')
+        exponente_uno = pat1.findall(polinomic_function)
+        pat = re.compile(sym+r'[**]+[0-9]+')
+        exponentes = pat.findall(polinomic_function)
+        pat2 = re.compile(r'[*]?\d[+-]?(?![*]+)')
+        constantes = pat2.findall(polinomic_function)
+        print(exponente_uno)
+        lista = []
+        pp = len(constantes)
+        while pp > 0:
+            for i in constantes:
+                if '*' in i:
+                    constantes.remove(i)
+            pp-=1
+        print('const: ',constantes)
+        s = ''.join(exponentes)
+        for i in s:
+            if i.isdigit():
+                print(i)
+                lista.append(i)
+        if len(exponente_uno) !=0:
+            lista.append(str(len(exponente_uno)))
+        lista = sorted(lista)
+        print('lista',lista)
+        lista2 = []
+        if len(constantes) > 0:
+            lista.append(str(len(constantes)))
+            lista = sorted(lista)
+            print('lista con 1?: ', lista)
+            for i, val in enumerate(lista):
+                if i == 0:
+                    lista2.append(str(se[i]))
+                if '-' in str(se[i]) and i != 0:
+                    lista2.append(str(se[i])+'*'+sym+'**'+val)
+                elif i != 0:
+                    lista2.append('+'+str(se[i])+'*'+sym+'**'+val)
+        else:
+            for i, val in enumerate(lista):
+                if '-' in str(se[i]):
+                    lista2.append(str(se[i])+'*'+sym+'**'+val)
+                else:
+                    lista2.append('+'+str(se[i])+'*'+sym+'**'+val)
+        func_obt = ''.join(lista2)
+        x = np.linspace(inf,sup,50)
+        fun1 = eval(func_obt)
+        fun2 = eval(function)
+        plt.plot(x,fun1,x,fun2)
+        return plt.show()
