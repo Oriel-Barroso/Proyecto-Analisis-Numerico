@@ -69,32 +69,36 @@ class Functions():
 
     def function_construction(self, expre):
         text = expre
-        if '+' in expre or '-' in expre:
+        if '+' in text or '-' in text:
             if '-' in text:
                 for i in text:
                     if i == '-':
                         result = [i+x for x in text.split(i)]
                         result[0] = result[0].strip(i)
-                lista = []
-                for x in result:
-                    lista.append(x.split('+'))
-                y = list(chain(*lista))
-                for i in y:
-                    if i.isdigit():
-                        j = i
-                        y.remove(i)
-                        y.insert(0, j)
-                    else:
-                        pattern = re.compile(r'[-]{1}\d(?![*]+)')
-                        num = pattern.findall(i)
-                        list_neg = []
-                        for i in num:
-                            if i.startswith('-'):
-                                r = i
-                                list_neg.append(i)
+                        lista = []
+                        for x in result:
+                            lista.append(x.split('+'))
+                        y = list(chain(*lista))
+                        for i in y:
+                            if i.isdigit():
+                                j = i
                                 y.remove(i)
-                                y.insert(0, r)
-                return(y)
+                                y.insert(0, j)
+                            else:
+                                pattern = re.compile(r'[-]{1}\d(?![*]+)')
+                                num = pattern.findall(i)
+                                list_neg = []
+                                for i in num:
+                                    if i.startswith('-'):
+                                        r = i
+                                        list_neg.append(i)
+                                        y.remove(i)
+                                        y.insert(0, r)
+                        res = []
+                        for ele in y:
+                            if ele.strip():
+                                res.append(ele)
+                return((res))
             else:
                 result2 = text.split('+')
                 for i in result2:
@@ -102,7 +106,8 @@ class Functions():
                         j = i
                         result2.remove(i)
                         result2.insert(0, j)
-                    
-                return result2
+                return((result2))
         else:
-            return expre
+            list_expre = []
+            list_expre.append(text)
+            return((list_expre))

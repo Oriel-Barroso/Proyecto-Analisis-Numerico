@@ -1,9 +1,12 @@
+from numpy.linalg import LinAlgError
+from sympy.ntheory.generate import prime
 from functions import Functions
 from sympy import symbols, integrate
 import math
 import numpy as np
 import matplotlib.pyplot as plt
 import re
+import sys
 
 
 class ServiceFunction():
@@ -16,11 +19,11 @@ class ServiceFunction():
         j = 0
         i = 0
         lenght = (len(polinomic_function)*len(polinomic_function)) - 1
+        print(polinomic_function)
         while len(self.matrix_a) <= lenght:
-            integrate_func = integrate(
-                (polinomic_function[i]+'*'+polinomic_function[j]+'*'+w_p), (symbol_to_integrate, inf, sup)).evalf()
+            integrate_func = integrate((polinomic_function[i]+'*'+polinomic_function[j]+'*'+w_p), (symbol_to_integrate, inf, sup)).evalf()
             i += 1
-            self.matrix_a.append(integrate_func)
+            self.matrix_a.append(float(integrate_func))
             if i == len(polinomic_function):
                 i = 0
                 j += 1
@@ -28,42 +31,25 @@ class ServiceFunction():
 
     def calculate_matrix_b(self, function, polinomic_function, symbol, inf, sup):
         for i in range(len(polinomic_function)):
-            for val in function:
-                integrate_func = integrate(
-                    (polinomic_function[i]+'*'+val), (symbol, inf, sup)).evalf()
-                self.matrix_b.append(integrate_func)
+            integrate_func = integrate((polinomic_function[i]+'*'+function), (symbol, inf, sup)).evalf()
+            self.matrix_b.append(integrate_func)
         return self.matrix_b
 
-    def calculate_se(self, polinomic_function, symbol):
-        sqr_root = int(math.sqrt(len(self.matrix_a)))
-        list_a = []
-        i = 0
-        j = sqr_root
-        while True:
-            if j > len(self.matrix_a):
-                break
-            list_a.append(self.matrix_a[i:j])
-            i = j
-            j += sqr_root
-        mtx_a = []
-        for i in list_a:
-            mtx_a.append(np.array(i))
-        mtx_a = np.array(mtx_a)
-        mtx_b = np.array(self.matrix_b)
-        result = np.linalg.solve(mtx_a, mtx_b)
-        expre = polinomic_function
+    def regex_func(self, any_function, symbol, result):
+        expre = any_function
+        print('expre: ', expre)
         sym = symbol
         pat1 = re.compile(r'[**]?[*]?'+sym+r'[+-]?(?![**])')
         exponente_uno = pat1.findall(expre)
         pat = re.compile(sym+r'[**]+[0-9]+')
         exponentes = pat.findall(expre)
-        pat2 = re.compile(r'[*]?\d[+-]?(?![*]+)')
+        pat2 = re.compile(r'[*]?\d[+-]?[/]?(?![*]+)')
         constantes = pat2.findall(expre)
         lista = []
         largo_const = len(constantes)
         while largo_const > 0:
             for i in constantes:
-                if '*' in i:
+                if '*' in i or '/' in i:
                     constantes.remove(i)
             largo_const-=1
         expre_expo = ''.join(exponentes)
@@ -72,19 +58,19 @@ class ServiceFunction():
                 lista.append(i)
         if len(exponente_uno) !=0:
             lista.append(str(len(exponente_uno)))
-        lista = sorted(lista)
         se = result
         lista2 = []
+        print('se: ', se)
+        print('const: ', constantes)
         if len(constantes) > 0:
             lista.append(str(len(constantes)))
             lista = sorted(lista)
-            print('lista con 1?: ', lista)
             for i, val in enumerate(lista):
                 if i == 0:
                     lista2.append(str(se[i]))
-                if '-' in str(se[i]) and i != 0:
+                elif '-' in str(se[i]) and i != 0:
                     lista2.append(str(se[i])+'*'+sym+'**'+val)
-                elif i != 0:
+                else:
                     lista2.append('+'+str(se[i])+'*'+sym+'**'+val)
         else:
             for i, val in enumerate(lista):
@@ -93,69 +79,64 @@ class ServiceFunction():
                 else:
                     lista2.append('+'+str(se[i])+'*'+sym+'**'+val)
         lista3 = ''.join(lista2)
-        print('Funcion obtenida para aproximar: ',lista3)
-        return result
+        return(lista3)
+
+    def calculate_se(self, polinomic_function, symbol):
+        try:
+            sqr_root = int(math.sqrt(len(self.matrix_a)))
+            list_a = []
+            i = 0
+            j = sqr_root
+            while True:
+                if j > len(self.matrix_a):
+                    break
+                list_a.append(self.matrix_a[i:j])
+                i = j
+                j += sqr_root
+            mtx_a = []
+            for i in list_a:
+                mtx_a.append(np.array(i))
+            mtx_a = np.array(mtx_a, dtype=float)
+            mtx_b = np.array(self.matrix_b, dtype=float)
+            print('largo m.a: ', len(mtx_a))
+            print('matriz a: ', mtx_a)
+            print('matriz b de mtx: ', mtx_b)
+            print('matriz b de self: ', self.matrix_b)
+            print('largo m.b de self: ', len(self.matrix_b))
+            print('largo m.b de mtx: ', len(mtx_b))
+            result = np.linalg.solve(mtx_a, mtx_b)
+            result_a = []
+            for i in result:
+                result_a.append(float(i))
+            fun = self.regex_func(polinomic_function, symbol, result_a)
+            print('Funcion a aproximar: ', fun)
+            return result_a
+        except LinAlgError as err:
+            print('Error: ',err)
+            sys.exit()
+        except TypeError as err:
+            print(f'Parece que la funcion se anula en esos limites, mejor cambiarlos? (error computacional: {err})')
+            sys.exit()
 
     def error(self, function, w_p, symbol, inf, sup, result_se):
         try:
             function_sqr = '('+function+')'+'**2'
             integrate_calc = integrate(
                 (function_sqr+'*'+w_p), (symbol, inf, sup)).evalf()
+            print('Valor de la integral: ',integrate_calc)
+            print('Matriz b: ', self.matrix_b)
+            print('Resultado del se: ', result_se)
             calc_err = math.sqrt(
                 integrate_calc - sum(list(map(lambda x, y: x*y, result_se, self.matrix_b))))
             return calc_err
         except ValueError as err:
-            print(f'No a sido posible calcular el error (error de tipo: {err}')
+            print(f'No a sido posible calcular el error, error negativo! (error computacional de tipo: {err})')
 
-    def function_graph(self, function, polinomic_function, se, inf, sup, symbol):
+    '''def function_graph(self, function, polinomic_function, se, inf, sup, symbol):
         inf = str(inf)
         sup = str(sup)
-        sym = symbol
-        pat1 = re.compile(r'[**]?[*]?'+sym+r'[+-]?(?![**])')
-        exponente_uno = pat1.findall(polinomic_function)
-        pat = re.compile(sym+r'[**]+[0-9]+')
-        exponentes = pat.findall(polinomic_function)
-        pat2 = re.compile(r'[*]?\d[+-]?(?![*]+)')
-        constantes = pat2.findall(polinomic_function)
-        print(exponente_uno)
-        lista = []
-        pp = len(constantes)
-        while pp > 0:
-            for i in constantes:
-                if '*' in i:
-                    constantes.remove(i)
-            pp-=1
-        print('const: ',constantes)
-        s = ''.join(exponentes)
-        for i in s:
-            if i.isdigit():
-                print(i)
-                lista.append(i)
-        if len(exponente_uno) !=0:
-            lista.append(str(len(exponente_uno)))
-        lista = sorted(lista)
-        print('lista',lista)
-        lista2 = []
-        if len(constantes) > 0:
-            lista.append(str(len(constantes)))
-            lista = sorted(lista)
-            print('lista con 1?: ', lista)
-            for i, val in enumerate(lista):
-                if i == 0:
-                    lista2.append(str(se[i]))
-                if '-' in str(se[i]) and i != 0:
-                    lista2.append(str(se[i])+'*'+sym+'**'+val)
-                elif i != 0:
-                    lista2.append('+'+str(se[i])+'*'+sym+'**'+val)
-        else:
-            for i, val in enumerate(lista):
-                if '-' in str(se[i]):
-                    lista2.append(str(se[i])+'*'+sym+'**'+val)
-                else:
-                    lista2.append('+'+str(se[i])+'*'+sym+'**'+val)
-        func_obt = ''.join(lista2)
-        x = np.linspace(inf,sup,50)
+        x = np.linspace(int(inf),int(sup),50)
         fun1 = eval(func_obt)
         fun2 = eval(function)
         plt.plot(x,fun1,x,fun2)
-        return plt.show()
+        return plt.show()'''

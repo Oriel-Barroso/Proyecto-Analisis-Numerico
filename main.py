@@ -39,31 +39,40 @@ def main():
         
     if func_p == 's':
         fun.w_p = input('Ingresa la funcion peso')
+    else:
+        fun.w_p = '1'
 
-    fun.symbol = input('Ingresa el simbolo a utilizar como diferencial: ')
+    while True:
+        try:
+            fun.symbol = (input('Ingresa el simbolo a utilizar como diferencial: '))
+            if fun.symbol.isalpha():
+                break
+            else:
+                raise TypeError
+        except TypeError:
+            print('Ingresa una letra')
 
     i = 0
     while True:
         try: 
-            fun.inf_limit = float(input('Ingrese el limite inferior: '))
-            fun.sup_limit = float(input('Ingrese el limite superior: '))
+            fun.inf_limit = int(input('Ingrese el limite inferior: '))
+            fun.sup_limit = int(input('Ingrese el limite superior: '))
             i +=1
         except ValueError:
             print('ERROR! Debes ingresar un numero')
         if i == 1:
             break
-    
+
     func_x = fun.function_construction(fun.f_x)
     func_g = fun.function_construction(fun.g_x)
-    func_w = fun.function_construction(fun.w_p)
-    mtx_a = service.calculate_matrix_a(func_g, func_w, fun.symbol, ,fun.inf_limit, fun.sup_limit)
-    mtx_b = service.calculate_matrix_b(func_x, func_g, fun.symbol, fun.inf_limit, fun.sup_limit)
-    system_ecuation = service.calculate_se(func_x, func_g)
-    error_cal = service.error(func_x, func_w, fun.symbol, fun.inf_limit, fun.sup_limit, system_ecuation)
-    graph = service.function_graph(func_x, func_g, fun.inf_limit, fun.sup_limit)
+    mtx_a = service.calculate_matrix_a(func_g, fun.w_p, fun.symbol, fun.inf_limit, fun.sup_limit)
+    mtx_b = service.calculate_matrix_b(fun.f_x, func_g, fun.symbol, fun.inf_limit, fun.sup_limit)
+    system_ecuation = service.calculate_se(fun.g_x, fun.symbol)
+    error_cal = service.error(fun.f_x, fun.w_p, fun.symbol, fun.inf_limit, fun.sup_limit, system_ecuation)
+    #graph = service.function_graph(fun.f_x, fun.g_x, system_ecuation,fun.inf_limit, fun.sup_limit, fun.symbol)
 
-    print(system_ecuation)
-    print(error_cal)
-    print(graph)
-    
+    print('Error: ',error_cal)
 
+
+if __name__ == '__main__':
+    main()
