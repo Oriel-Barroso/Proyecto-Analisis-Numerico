@@ -26,21 +26,6 @@ def main():
             print(err)
         if i == 1:
             break
-    
-    while True:
-        try:
-            func_p = input('Deseas ingresar un funcion peso?(s/n): ')
-            if func_p == 's' or func_p == 'n':
-                break
-            else:
-                raise ValueError('Las opciones validas son "s" o "n"')
-        except ValueError as err:
-            print(err)
-        
-    if func_p == 's':
-        fun.w_p = input('Ingresa la funcion peso')
-    else:
-        fun.w_p = '1'
 
     while True:
         try:
@@ -62,6 +47,21 @@ def main():
             print('ERROR! Debes ingresar un numero')
         if i == 1:
             break
+    
+    while True:
+        try:
+            func_p = input('Deseas ingresar un funcion peso?(s/n): ')
+            if func_p == 's' or func_p == 'n':
+                break
+            else:
+                raise ValueError('Las opciones validas son "s" o "n"')
+        except ValueError as err:
+            print(err)
+        
+    if func_p == 's':
+        fun.w_p = input('Ingresa la funcion peso')
+    else:
+        fun.w_p = '1'
 
     func_x = fun.function_construction(fun.f_x)
     func_g = fun.function_construction(fun.g_x)
