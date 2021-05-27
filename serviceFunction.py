@@ -1,4 +1,5 @@
 from numpy.linalg import LinAlgError
+from sympy.core.sympify import SympifyError
 from sympy.ntheory.generate import prime
 from functions import Functions
 from sympy import symbols, integrate
@@ -15,25 +16,45 @@ class ServiceFunction():
         self.matrix_b = matrix_b
 
     def calculate_matrix_a(self, polinomic_function, w_p, symbol, inf, sup):
-        symbol_to_integrate = symbols(symbol)
-        j = 0
-        i = 0
-        lenght = (len(polinomic_function)*len(polinomic_function)) - 1
-        print(polinomic_function)
-        while len(self.matrix_a) <= lenght:
-            integrate_func = integrate((polinomic_function[i]+'*'+polinomic_function[j]+'*'+w_p), (symbol_to_integrate, inf, sup)).evalf()
-            i += 1
-            self.matrix_a.append(float(integrate_func))
-            if i == len(polinomic_function):
-                i = 0
-                j += 1
-        return self.matrix_a
+        try:
+            symbol_to_integrate = symbols(symbol)
+            j = 0
+            i = 0
+            lenght = (len(polinomic_function)*len(polinomic_function)) - 1
+            print(polinomic_function)
+            while len(self.matrix_a) <= lenght:
+                integrate_func = integrate((polinomic_function[i]+'*'+polinomic_function[j]+'*'+w_p), (symbol_to_integrate, inf, sup)).evalf()
+                i += 1
+                self.matrix_a.append(float(integrate_func))
+                if i == len(polinomic_function):
+                    i = 0
+                    j += 1
+            return self.matrix_a
+        except SyntaxError as err:
+            return (f'Expresion mal ingresada (error computacional: {err}')
+            sys.exit()
+        except ValueError as err:
+            return (f'Expresion mal ingresada (error computacional: {err}')
+            sys.exit()
+        except SympifyError as err:
+            return (f'Expresion mal ingresada (error computacional: {err}')
+            sys.exit()
 
     def calculate_matrix_b(self, function, polinomic_function, symbol, inf, sup):
-        for i in range(len(polinomic_function)):
-            integrate_func = integrate((polinomic_function[i]+'*'+function), (symbol, inf, sup)).evalf()
-            self.matrix_b.append(integrate_func)
-        return self.matrix_b
+        try:
+            for i in range(len(polinomic_function)):
+                integrate_func = integrate((polinomic_function[i]+'*'+function), (symbol, inf, sup)).evalf()
+                self.matrix_b.append(integrate_func)
+            return self.matrix_b
+        except SyntaxError as err:
+            print(f'Expresion mal ingresada (error computacional: {err}')
+            sys.exit()
+        except ValueError as err:
+            print(f'Expresion mal ingresada (error computacional: {err}')
+            sys.exit()
+        except SympifyError as err:
+            print(f'Expresion mal ingresada (error computacional: {err}')
+            sys.exit()
 
     def regex_func(self, any_function, symbol, result):
         expre = any_function
@@ -116,6 +137,12 @@ class ServiceFunction():
             sys.exit()
         except TypeError as err:
             print(f'Parece que la funcion se anula en esos limites, mejor cambiarlos? (error computacional: {err})')
+            sys.exit()
+        except SympifyError as err:
+            print(f'Expresion mal ingresada (error computacional: {err}')
+            sys.exit()
+        except SyntaxError as err:
+            print(f'Expresion mal ingresada (error computacional: {err}')
             sys.exit()
 
     def error(self, function, w_p, symbol, inf, sup, result_se):
