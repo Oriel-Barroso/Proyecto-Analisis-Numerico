@@ -59,7 +59,7 @@ def main():
             print(err)
         
     if func_p == 's':
-        fun.w_p = input('Ingresa la funcion peso')
+        fun.w_p = input('Ingresa la funcion peso: ')
     else:
         fun.w_p = '1'
 

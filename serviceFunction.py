@@ -5,7 +5,6 @@ from functions import Functions
 from sympy import symbols, integrate
 import math
 import numpy as np
-import matplotlib.pyplot as plt
 import re
 import sys
 
@@ -58,7 +57,6 @@ class ServiceFunction():
 
     def regex_func(self, any_function, symbol, result):
         expre = any_function
-        print('expre: ', expre)
         sym = symbol
         pat1 = re.compile(r'[**]?[*]?'+sym+r'[+-]?(?![**])')
         exponente_uno = pat1.findall(expre)
@@ -81,8 +79,6 @@ class ServiceFunction():
             lista.append(str(len(exponente_uno)))
         se = result
         lista2 = []
-        print('se: ', se)
-        print('const: ', constantes)
         if len(constantes) > 0:
             lista.append(str(len(constantes)))
             lista = sorted(lista)
@@ -94,6 +90,7 @@ class ServiceFunction():
                 else:
                     lista2.append('+'+str(se[i])+'*'+sym+'**'+val)
         else:
+            lista.sort()
             for i, val in enumerate(lista):
                 if '-' in str(se[i]):
                     lista2.append(str(se[i])+'*'+sym+'**'+val)
@@ -115,21 +112,18 @@ class ServiceFunction():
                 i = j
                 j += sqr_root
             mtx_a = []
+            print('MATRIZ A: ', list_a)
             for i in list_a:
                 mtx_a.append(np.array(i))
-            mtx_a = np.array(mtx_a, dtype=float)
+            mtx_a = np.array(mtx_a, dtype = float)
             mtx_b = np.array(self.matrix_b, dtype=float)
-            print('largo m.a: ', len(mtx_a))
-            print('matriz a: ', mtx_a)
-            print('matriz b de mtx: ', mtx_b)
-            print('matriz b de self: ', self.matrix_b)
-            print('largo m.b de self: ', len(self.matrix_b))
-            print('largo m.b de mtx: ', len(mtx_b))
+            print('MATRIZ B: ', self.matrix_b)
             result = np.linalg.solve(mtx_a, mtx_b)
             result_a = []
             for i in result:
                 result_a.append(float(i))
             fun = self.regex_func(polinomic_function, symbol, result_a)
+            print('Resultado del Sistema de Ecuaciones: ', result_a)
             print('Funcion a aproximar: ', fun)
             return result_a
         except LinAlgError as err:
@@ -150,9 +144,8 @@ class ServiceFunction():
             function_sqr = '('+function+')'+'**2'
             integrate_calc = integrate(
                 (function_sqr+'*'+w_p), (symbol, inf, sup)).evalf()
-            print('Valor de la integral: ',integrate_calc)
-            print('Matriz b: ', self.matrix_b)
-            print('Resultado del se: ', result_se)
+            print('Valor de (f)^2: ',integrate_calc)
+            
             calc_err = math.sqrt(
                 integrate_calc - sum(list(map(lambda x, y: x*y, result_se, self.matrix_b))))
             return calc_err

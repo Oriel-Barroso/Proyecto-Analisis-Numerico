@@ -1,5 +1,6 @@
 from itertools import chain
 import re
+import sys
 
 
 class Functions():
@@ -69,44 +70,87 @@ class Functions():
 
     def function_construction(self, expre):
         text = expre
+        pat_neg = re.compile(r'[exp|sin|cos|tan|ln]+[(][-]?x[**]*[-]?[0-9]*[)](?![**])')
+        exp_neg = pat_neg.findall(text)
+        if len(exp_neg) != 0:
+            euler =''.join(exp_neg)
+            text = text.replace(euler, '')
         if '+' in text or '-' in text:
             if '-' in text:
                 for i in text:
                     if i == '-':
-                        result = [i+x for x in text.split(i)]
-                        result[0] = result[0].strip(i)
-                        lista = []
-                        for x in result:
-                            lista.append(x.split('+'))
-                        y = list(chain(*lista))
-                        for i in y:
-                            if i.isdigit():
-                                j = i
-                                y.remove(i)
-                                y.insert(0, j)
-                            else:
-                                pattern = re.compile(r'[-]{1}\d(?![*]+)')
-                                num = pattern.findall(i)
-                                list_neg = []
-                                for i in num:
-                                    if i.startswith('-'):
-                                        r = i
-                                        list_neg.append(i)
-                                        y.remove(i)
-                                        y.insert(0, r)
-                        res = []
-                        for ele in y:
-                            if ele.strip():
-                                res.append(ele)
-                return((res))
+                        result2 = [i+x for x in text.split(i)]
+                        result2[0] = result2[0].strip(i)
+                lista = []
+                for x in result2:
+                    lista.append(x.split('+'))
+                lista = list(chain(*lista))
+                lista3 = []
+                lista4 = []
+                numero = 0
+                for val in lista:
+                    x = 0
+                    if val.isdigit() is True:
+                        numero=val
+                        x+=1
+                        if x == 2:
+                            sys.exit()
+                    if '-' in val:
+                        lista3.append(val)
+                    else:
+                        lista4.append(val)
+                if numero != 0:
+                    lista4.remove(numero)
+                lista3.sort()
+                lista5 = []
+                lista6 = []
+                for i in lista3:
+                    lista5.append(i.replace('-', ''))
+                for i in lista4:
+                    if i.strip():
+                        lista6.append(i)
+                i = 0
+                for j in lista6:
+                    while i != len(lista5):
+                        if i == len(lista5):
+                            break
+                        if j < lista5[i]:
+                            break
+                        elif j > lista5[i]:
+                            i+=1
+                        else:
+                            lista5.append(j)
+                    if i == len(lista5):
+                        lista5.append(j)
+                    if j == 'x':
+                        lista5.insert(0,j)
+                    else:
+                        lista5.insert(i,j)
+                lista7 = []
+                for j in lista5:
+                    lista7.append('-'+j)
+                lista8 = []
+                for j in lista7:
+                    if j not in lista3:
+                        lista8.append(j.replace('-', ''))
+                    else:
+                        lista8.append(j)
+                if numero != 0:
+                    lista8.insert(0,numero)
+                if len(exp_neg) != 0:
+                    lista8.insert(0, euler)
+                return((lista8))
             else:
                 result2 = text.split('+')
-                for i in result2:
-                    if i.isdigit():
-                        j = i
-                        result2.remove(i)
-                        result2.insert(0, j)
-                return((result2))
+                for val in result2:
+                    if val.isdigit() is True:
+                        j=val
+                        result2.remove(val)
+                        result2.sort()
+                        result2.insert(0,j)
+                    else:
+                        result2.sort()
+                return(result2)
         else:
             list_expre = []
             list_expre.append(text)
